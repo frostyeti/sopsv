@@ -22,6 +22,7 @@ export default defineConfig({
 						{ label: 'Managing Vaults', slug: 'guides/vaults' },
 						{ label: 'Managing Secrets', slug: 'guides/secrets' },
 						{ label: 'Executing Commands', slug: 'guides/exec' },
+						{ label: 'Syncing Secrets', slug: 'guides/sync' },
 					],
 				},
 				{

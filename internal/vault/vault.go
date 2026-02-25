@@ -145,6 +145,24 @@ func WriteVault(name string, data map[string]interface{}) error {
 	return encryptFileWithSops(path, cleartext, pubKey)
 }
 
+// EditVault opens the vault interactively in the user's editor using sops.
+func EditVault(name string) error {
+	path := ResolveVaultPath(name)
+
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return fmt.Errorf("vault %s not found at %s", name, path)
+	}
+
+	// Just use the sops CLI directly to handle the editing.
+	// It will read SOPS_AGE_KEY_FILE from the environment automatically.
+	cmd := sopsCmd(path)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	return cmd.Run()
+}
+
 // SetSecret sets a single secret in the vault
 func SetSecret(vaultName string, key string, value interface{}) error {
 	data, err := ReadVault(vaultName)

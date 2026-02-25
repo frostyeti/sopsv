@@ -113,11 +113,35 @@ var deleteVaultCmd = &cobra.Command{
 	},
 }
 
+var editVaultCmd = &cobra.Command{
+	Use:   "edit [name]",
+	Short: "Edit a vault interactively in your $EDITOR",
+	Args:  cobra.MaximumNArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		name := config.GetDefaultVault()
+		if len(args) > 0 {
+			name = args[0]
+		}
+
+		if name == "" {
+			color.Red("No vault specified and no default vault set.")
+			return
+		}
+
+		err := vault.EditVault(name)
+		if err != nil {
+			color.Red("Error editing vault: %v", err)
+			return
+		}
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(vaultsCmd)
 	vaultsCmd.AddCommand(newVaultCmd)
 	vaultsCmd.AddCommand(listVaultsCmd)
 	vaultsCmd.AddCommand(useVaultCmd)
 	vaultsCmd.AddCommand(showVaultCmd)
+	vaultsCmd.AddCommand(editVaultCmd)
 	vaultsCmd.AddCommand(deleteVaultCmd)
 }

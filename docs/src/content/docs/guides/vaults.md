@@ -39,6 +39,14 @@ To decrypt and view the raw YAML contents of a vault:
 sopsv vaults show myvault
 ```
 
+## Edit a vault
+
+To securely open a vault in your `$EDITOR`, decrypting it on the fly and re-encrypting it upon saving:
+
+```bash
+sopsv vaults edit myvault
+```
+
 ## Delete a vault
 
 ```bash
