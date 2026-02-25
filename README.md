@@ -51,13 +51,51 @@ You do not need to manually initialize the vault. `sopsv` will automatically:
   sopsv vaults delete myvault
   ```
 
-### Accessing Secrets
+### Manage Secrets
 
-- **Get a specific key:**
+The `secrets` subcommand group allows you to manage entries inside a vault.
+
+- **Set a secret:**
   ```bash
-  sopsv get mykey
+  sopsv secrets set --key api-token --value "secret123"
+  sopsv secrets set --key api-token --generate --size 32
+  echo "secret" | sopsv secrets set --key api-token --stdin
   ```
-  *(Reads from the default vault. You can override it with `-v myvault`)*
+
+- **Get a secret:**
+  ```bash
+  sopsv secrets get --key api-token
+  ```
+  You can also get multiple keys and format the output:
+  ```bash
+  sopsv secrets get --key DB_USER --key DB_PASS --format dotenv
+  sopsv secrets get --key DB_USER --key DB_PASS --format sh
+  sopsv secrets get --key DB_USER --key DB_PASS --format json
+  ```
+
+- **Ensure a secret exists:**
+  *(Returns the secret if it exists, otherwise generates and saves a new random one)*
+  ```bash
+  sopsv secrets ensure --key my-random-key --size 24
+  ```
+
+- **Remove a secret:**
+  ```bash
+  sopsv secrets rm --key api-token
+  ```
+
+- **List all keys in a vault:**
+  ```bash
+  sopsv secrets ls
+  ```
+
+- **Export and Import:**
+  ```bash
+  sopsv secrets export --json --pretty --file secrets.json
+  sopsv secrets import --file secrets.json
+  ```
+
+*Note: All `secrets` commands operate on the default vault unless overridden by the `--vault` (or `-V`) flag.*
 
 ### Executing Commands with Secrets
 

@@ -14,8 +14,6 @@ import (
 )
 
 // ResolveVaultPath returns the absolute path to a vault.
-// If it has path separators or ends in .yaml, it resolves to local or absolute path.
-// Otherwise it looks in the data directory (~/.local/share/sopsv/).
 func ResolveVaultPath(name string) string {
 	if strings.Contains(name, string(filepath.Separator)) || strings.HasSuffix(name, ".yaml") {
 		absPath, err := filepath.Abs(name)
@@ -40,7 +38,7 @@ func NewVault(name string) error {
 		return fmt.Errorf("failed to ensure age key: %w", err)
 	}
 
-	cleartext := []byte("default: value\n")
+	cleartext := []byte("sopsv_init: true\n")
 	return encryptFileWithSops(path, cleartext, pubKey)
 }
 
@@ -113,5 +111,63 @@ func ReadVault(name string) (map[string]interface{}, error) {
 		return nil, fmt.Errorf("failed to unmarshal yaml from vault %s: %w", name, err)
 	}
 
+	if data == nil {
+		data = make(map[string]interface{})
+	}
+
 	return data, nil
+}
+
+// WriteVault updates the vault with the provided data.
+func WriteVault(name string, data map[string]interface{}) error {
+	path := ResolveVaultPath(name)
+
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return fmt.Errorf("vault %s not found at %s", name, path)
+	}
+
+	pubKey, err := age.GetPublicKey()
+	if err != nil {
+		return fmt.Errorf("failed to get public key for encryption: %w", err)
+	}
+
+	cleartext, err := yaml.Marshal(data)
+	if err != nil {
+		return fmt.Errorf("failed to marshal yaml: %w", err)
+	}
+
+	return encryptFileWithSops(path, cleartext, pubKey)
+}
+
+// SetSecret sets a single secret in the vault
+func SetSecret(vaultName string, key string, value interface{}) error {
+	data, err := ReadVault(vaultName)
+	if err != nil {
+		// Auto initialize if missing
+		err = NewVault(vaultName)
+		if err != nil {
+			return err
+		}
+		data = make(map[string]interface{})
+	}
+
+	data[key] = value
+
+	return WriteVault(vaultName, data)
+}
+
+// RemoveSecret removes a single secret from the vault
+func RemoveSecret(vaultName string, key string) error {
+	data, err := ReadVault(vaultName)
+	if err != nil {
+		return err
+	}
+
+	if _, exists := data[key]; !exists {
+		return fmt.Errorf("secret %s not found in vault %s", key, vaultName)
+	}
+
+	delete(data, key)
+
+	return WriteVault(vaultName, data)
 }
