@@ -84,9 +84,12 @@ func TestListVaults(t *testing.T) {
 	tempDir := setupMockEnvironment(t)
 
 	// Create some fake vaults
-	os.WriteFile(filepath.Join(tempDir, "v1.yaml"), []byte("mock"), 0600)
-	os.WriteFile(filepath.Join(tempDir, "v2.yaml"), []byte("mock"), 0600)
-	os.WriteFile(filepath.Join(tempDir, "not_a_vault.txt"), []byte("mock"), 0600)
+	err := os.WriteFile(filepath.Join(tempDir, "v1.yaml"), []byte("mock"), 0600)
+	require.NoError(t, err)
+	err = os.WriteFile(filepath.Join(tempDir, "v2.yaml"), []byte("mock"), 0600)
+	require.NoError(t, err)
+	err = os.WriteFile(filepath.Join(tempDir, "not_a_vault.txt"), []byte("mock"), 0600)
+	require.NoError(t, err)
 
 	vaults, err := ListVaults()
 	require.NoError(t, err)
@@ -98,9 +101,10 @@ func TestListVaults(t *testing.T) {
 func TestDeleteVault(t *testing.T) {
 	tempDir := setupMockEnvironment(t)
 	vaultPath := filepath.Join(tempDir, "todelete.yaml")
-	os.WriteFile(vaultPath, []byte("mock"), 0600)
+	err := os.WriteFile(vaultPath, []byte("mock"), 0600)
+	require.NoError(t, err)
 
-	err := DeleteVault("todelete")
+	err = DeleteVault("todelete")
 	require.NoError(t, err)
 
 	_, err = os.Stat(vaultPath)
@@ -110,7 +114,8 @@ func TestDeleteVault(t *testing.T) {
 func TestReadVault(t *testing.T) {
 	tempDir := setupMockEnvironment(t)
 	vaultPath := filepath.Join(tempDir, "readvault.yaml")
-	os.WriteFile(vaultPath, []byte("encrypted_data"), 0600)
+	err := os.WriteFile(vaultPath, []byte("encrypted_data"), 0600)
+	require.NoError(t, err)
 
 	data, err := ReadVault("readvault")
 	require.NoError(t, err)
@@ -122,13 +127,14 @@ func TestReadVault(t *testing.T) {
 func TestWriteVault(t *testing.T) {
 	tempDir := setupMockEnvironment(t)
 	vaultPath := filepath.Join(tempDir, "writevault.yaml")
-	os.WriteFile(vaultPath, []byte("encrypted_data"), 0600)
+	err := os.WriteFile(vaultPath, []byte("encrypted_data"), 0600)
+	require.NoError(t, err)
 
 	data := map[string]interface{}{
 		"newkey": "newvalue",
 	}
 
-	err := WriteVault("writevault", data)
+	err = WriteVault("writevault", data)
 	require.NoError(t, err)
 
 	content, err := os.ReadFile(vaultPath)
@@ -151,9 +157,10 @@ func TestSetSecret(t *testing.T) {
 func TestRemoveSecret(t *testing.T) {
 	tempDir := setupMockEnvironment(t)
 	vaultPath := filepath.Join(tempDir, "rmvault.yaml")
-	os.WriteFile(vaultPath, []byte("mock"), 0600)
+	err := os.WriteFile(vaultPath, []byte("mock"), 0600)
+	require.NoError(t, err)
 
-	err := RemoveSecret("rmvault", "key1")
+	err = RemoveSecret("rmvault", "key1")
 	require.NoError(t, err)
 
 	// Remove nonexistent key should fail

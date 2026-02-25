@@ -115,7 +115,11 @@ var ensureCmd = &cobra.Command{
 
 		size, _ := cmd.Flags().GetInt("size")
 		b := make([]byte, size)
-		rand.Read(b)
+		_, err = rand.Read(b)
+		if err != nil {
+			color.Red("Failed to generate secret: %v", err)
+			os.Exit(1)
+		}
 		value := base64.RawURLEncoding.EncodeToString(b)[:size]
 
 		err = vault.SetSecret(vaultName, key, value)

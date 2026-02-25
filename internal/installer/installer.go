@@ -65,23 +65,6 @@ func downloadFile(url, dest string) error {
 	return err
 }
 
-func copyFile(src, dst string) error {
-	in, err := os.Open(src)
-	if err != nil {
-		return err
-	}
-	defer in.Close()
-
-	out, err := os.OpenFile(dst, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0755)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-
-	_, err = io.Copy(out, in)
-	return err
-}
-
 func InstallSops(destDir string) error {
 	color.Cyan("Fetching latest sops release...")
 	rel, err := getLatestRelease("getsops/sops")
@@ -92,11 +75,6 @@ func InstallSops(destDir string) error {
 	// sops-v3.8.1.linux.amd64
 	osName := runtime.GOOS
 	arch := runtime.GOARCH
-
-	// sops mapping
-	if osName == "darwin" && arch == "amd64" {
-		// macos amd64 is often just 'darwin' or 'darwin.amd64'
-	}
 
 	var assetURL string
 	expectedSuffix := fmt.Sprintf("%s.%s", osName, arch)

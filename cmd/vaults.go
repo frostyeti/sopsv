@@ -108,7 +108,7 @@ var deleteVaultCmd = &cobra.Command{
 		color.Green("Vault '%s' deleted successfully", name)
 
 		if config.GetDefaultVault() == name {
-			config.SetDefaultVault("")
+			_ = config.SetDefaultVault("")
 		}
 	},
 }
