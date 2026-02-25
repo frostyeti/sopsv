@@ -57,6 +57,12 @@ You do not need to manually initialize the vault. `sopsv` will automatically:
   ```
   *(If no vault is specified, it uses the default vault)*
 
+- **Edit a vault interactively:**
+  ```bash
+  sopsv vaults edit myvault
+  ```
+  *(Opens the vault in your `$EDITOR` and re-encrypts upon saving)*
+
 - **Delete a vault:**
   ```bash
   sopsv vaults delete myvault
@@ -115,3 +121,17 @@ The `secrets` subcommand group allows you to manage entries inside a vault.
   sopsv exec --vaults myvault,myothervault -- env
   ```
   *(If no vaults are specified, it defaults to the configured default vault)*
+
+### Syncing Secrets to Local Files
+
+If you need a physical `.env` file instead of using `exec`, you can sync a vault to a local file:
+
+- **Sync once:**
+  ```bash
+  sopsv sync myvault --dest .env
+  ```
+
+- **Continuously watch and sync:**
+  ```bash
+  sopsv sync myvault --dest .env --watch
+  ```
