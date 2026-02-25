@@ -1,0 +1,60 @@
+version: 2
+
+project_name: sopsv
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+
+dist: .artifacts
+
+archives:
+  - format: tar.gz
+    # this name template makes the OS and Arch compatible with the results of uname.
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+    format_overrides:
+      - goos: windows
+        format: zip
+
+nfpms:
+  - vendor: deb
+    homepage: "https://github.com/frostyeti/sopsv"
+    maintainer: "Frostyeti"
+    description: "A local secret vault CLI using sops and age"
+    license: "MIT"
+    formats:
+      - deb
+      - rpm
+      - apk
+      
+snapcrafts:
+  - summary: A local secret vault CLI using sops and age
+    description: "Manage encrypted secrets locally using sops and age with a simple developer experience."
+    publish: false # Set to true when ready to publish to snap store
+
+brews:
+  - repository:
+      owner: frostyeti
+      name: homebrew-tap
+    homepage: "https://github.com/frostyeti/sopsv"
+    description: "A local secret vault CLI using sops and age"
+    license: "MIT"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
