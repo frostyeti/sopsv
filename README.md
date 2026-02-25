@@ -11,7 +11,18 @@
    ```
 3. Move `sopsv` to a location in your `$PATH`.
 
-*Note: `sopsv` requires `sops` to be installed and available in your `$PATH`.*
+*Note: `sopsv` requires `sops` and `age` to be installed and available in your `$PATH`. You can install them automatically using the built-in installer tool:*
+
+```bash
+# Install to ~/.local/bin (Mac/Linux) or %LOCALAPPDATA%\Programs\bin (Windows)
+sopsv tools install
+
+# Install globally to /usr/local/bin (Mac/Linux) or C:\Program Files\bin (Windows)
+sudo sopsv tools install --global
+
+# Install to a custom directory
+sopsv tools install --dest /path/to/my/bin
+```
 
 ## Initialization
 

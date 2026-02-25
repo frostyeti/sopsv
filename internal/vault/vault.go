@@ -13,6 +13,12 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+var (
+	ageEnsureKeyExists = age.EnsureKeyExists
+	ageGetPublicKey    = age.GetPublicKey
+	sopsDecryptFile    = sops.DecryptFile
+)
+
 // ResolveVaultPath returns the absolute path to a vault.
 func ResolveVaultPath(name string) string {
 	if strings.Contains(name, string(filepath.Separator)) || strings.HasSuffix(name, ".yaml") {
@@ -33,7 +39,7 @@ func NewVault(name string) error {
 		return fmt.Errorf("vault %s already exists at %s", name, path)
 	}
 
-	pubKey, err := age.EnsureKeyExists()
+	pubKey, err := ageEnsureKeyExists()
 	if err != nil {
 		return fmt.Errorf("failed to ensure age key: %w", err)
 	}
@@ -64,7 +70,7 @@ func encryptFileWithSops(path string, cleartext []byte, pubKey string) error {
 	return os.WriteFile(path, out, 0600)
 }
 
-func sopsCmd(args ...string) *exec.Cmd {
+var sopsCmd = func(args ...string) *exec.Cmd {
 	return exec.Command("sops", args...)
 }
 
@@ -101,7 +107,7 @@ func ReadVault(name string) (map[string]interface{}, error) {
 		return nil, fmt.Errorf("vault %s not found at %s", name, path)
 	}
 
-	cleartext, err := sops.DecryptFile(path)
+	cleartext, err := sopsDecryptFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decrypt vault %s: %w", name, err)
 	}
@@ -126,7 +132,7 @@ func WriteVault(name string, data map[string]interface{}) error {
 		return fmt.Errorf("vault %s not found at %s", name, path)
 	}
 
-	pubKey, err := age.GetPublicKey()
+	pubKey, err := ageGetPublicKey()
 	if err != nil {
 		return fmt.Errorf("failed to get public key for encryption: %w", err)
 	}
