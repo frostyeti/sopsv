@@ -23,11 +23,11 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        working-directory: ./docs
+        working-directory: ./docs/site
         run: npm ci
 
       - name: Build Astro
-        working-directory: ./docs
+        working-directory: ./docs/site
         run: npm run build
 
       - name: Deploy to Cloudflare Pages
@@ -36,6 +36,6 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           projectName: sopsv-docs
-          directory: ./docs/dist
+          directory: ./docs/site/dist
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
           branch: main

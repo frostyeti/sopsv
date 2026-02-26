@@ -17,6 +17,8 @@ var (
 	ageEnsureKeyExists = age.EnsureKeyExists
 	ageGetPublicKey    = age.GetPublicKey
 	sopsDecryptFile    = sops.DecryptFile
+	sopsExtractValue   = sops.ExtractValue
+	sopsSetValue       = sops.SetValue
 )
 
 // ResolveVaultPath returns the absolute path to a vault.
@@ -124,7 +126,7 @@ func ReadVault(name string) (map[string]interface{}, error) {
 	return data, nil
 }
 
-// WriteVault updates the vault with the provided data.
+// WriteVault updates the vault with the provided data (encrypting the whole file).
 func WriteVault(name string, data map[string]interface{}) error {
 	path := ResolveVaultPath(name)
 
@@ -153,8 +155,6 @@ func EditVault(name string) error {
 		return fmt.Errorf("vault %s not found at %s", name, path)
 	}
 
-	// Just use the sops CLI directly to handle the editing.
-	// It will read SOPS_AGE_KEY_FILE from the environment automatically.
 	cmd := sopsCmd(path)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
@@ -163,35 +163,66 @@ func EditVault(name string) error {
 	return cmd.Run()
 }
 
-// SetSecret sets a single secret in the vault
+// SetSecret sets a single secret in the vault using sops set
 func SetSecret(vaultName string, key string, value interface{}) error {
-	data, err := ReadVault(vaultName)
-	if err != nil {
+	path := ResolveVaultPath(vaultName)
+
+	if _, err := os.Stat(path); os.IsNotExist(err) {
 		// Auto initialize if missing
 		err = NewVault(vaultName)
 		if err != nil {
 			return err
 		}
-		data = make(map[string]interface{})
 	}
 
-	data[key] = value
-
-	return WriteVault(vaultName, data)
+	return sopsSetValue(path, key, value)
 }
 
-// RemoveSecret removes a single secret from the vault
+// RemoveSecret removes a single secret from the vault by setting it to empty
 func RemoveSecret(vaultName string, key string) error {
-	data, err := ReadVault(vaultName)
+	path := ResolveVaultPath(vaultName)
+
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return fmt.Errorf("vault %s not found", vaultName)
+	}
+
+	return sopsSetValue(path, key, "")
+}
+
+// GetSecret extracts a single secret from the vault
+func GetSecret(vaultName string, key string) (string, error) {
+	path := ResolveVaultPath(vaultName)
+
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return "", fmt.Errorf("vault %s not found", vaultName)
+	}
+
+	return sopsExtractValue(path, key)
+}
+
+// ListKeys returns all keys in a vault without decrypting it
+func ListKeys(vaultName string) ([]string, error) {
+	path := ResolveVaultPath(vaultName)
+
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return nil, fmt.Errorf("vault %s not found", vaultName)
+	}
+
+	bytes, err := os.ReadFile(path)
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("failed to read vault file: %w", err)
 	}
 
-	if _, exists := data[key]; !exists {
-		return fmt.Errorf("secret %s not found in vault %s", key, vaultName)
+	var data map[string]interface{}
+	if err := yaml.Unmarshal(bytes, &data); err != nil {
+		return nil, fmt.Errorf("failed to parse vault yaml: %w", err)
 	}
 
-	delete(data, key)
-
-	return WriteVault(vaultName, data)
+	var keys []string
+	for k := range data {
+		if k != "sops" { // ignore sops metadata key
+			keys = append(keys, k)
+		}
+	}
+	return keys, nil
 }

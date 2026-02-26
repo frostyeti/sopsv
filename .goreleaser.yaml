@@ -19,11 +19,11 @@ archives:
   - format: tar.gz
     # this name template makes the OS and Arch compatible with the results of uname.
     name_template: >-
-      {{ .ProjectName }}_
-      {{- title .Os }}_
+      {{ .ProjectName | tolower }}_
+      {{- .Os | tolower }}_
       {{- if eq .Arch "amd64" }}x86_64
       {{- else if eq .Arch "386" }}i386
-      {{- else }}{{ .Arch }}{{ end }}
+      {{- else }}{{ .Arch | tolower }}{{ end }}
     format_overrides:
       - goos: windows
         format: zip
@@ -38,7 +38,8 @@ nfpms:
       - deb
       - rpm
       - apk
-      
+      - archlinux
+
 snapcrafts:
   - summary: A local secret vault CLI using sops and age
     description: "Manage encrypted secrets locally using sops and age with a simple developer experience."
@@ -51,6 +52,33 @@ brews:
     homepage: "https://github.com/frostyeti/sopsv"
     description: "A local secret vault CLI using sops and age"
     license: "MIT"
+
+scoops:
+  - repository:
+      owner: frostyeti
+      name: scoop-bucket
+    homepage: "https://github.com/frostyeti/sopsv"
+    description: "A local secret vault CLI using sops and age"
+    license: "MIT"
+
+winget:
+  - publisher: frostyeti
+    package_identifier: "frostyeti.sopsv"
+    short_description: "A local secret vault CLI using sops and age"
+    license: "MIT"
+    skip_upload: true
+    repository:
+      owner: frostyeti
+      name: winget-pkgs
+
+chocolateys:
+  - name: sopsv
+    title: sopsv
+    authors: "frostyeti"
+    project_url: "https://github.com/frostyeti/sopsv"
+    description: "A local secret vault CLI using sops and age"
+    tags: "cli secrets vault password-manager sops age"
+    skip_publish: true
 
 changelog:
   sort: asc

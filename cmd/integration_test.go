@@ -38,7 +38,7 @@ func TestIntegration_VaultAndSecretsLifecycle(t *testing.T) {
 	require.True(t, os.IsNotExist(err), "vault should not exist yet")
 
 	// Create a new vault (this will also generate age keys)
-	err = ExecuteCommand("vaults", "new", vaultName)
+	err = ExecuteCommand("vault", "new", vaultName)
 	require.NoError(t, err, "vault creation should succeed")
 
 	// Ensure file was created
@@ -46,7 +46,7 @@ func TestIntegration_VaultAndSecretsLifecycle(t *testing.T) {
 	require.NoError(t, err, "vault file should be created")
 
 	// Test Set Secret
-	err = ExecuteCommand("secrets", "set", "--key", "DB_USER", "--value", "admin", "--vault", vaultName)
+	err = ExecuteCommand("set", "--key", "DB_USER", "--value", "admin", "--vault", vaultName)
 	require.NoError(t, err, "setting secret should succeed")
 
 	err = ExecuteCommand("secrets", "set", "--key", "DB_PASS", "--value", "supersecret", "--vault", vaultName)
@@ -67,11 +67,11 @@ func TestIntegration_VaultAndSecretsLifecycle(t *testing.T) {
 	require.NoError(t, err, "exec command should succeed")
 
 	// Test Remove Secret
-	err = ExecuteCommand("secrets", "rm", "--key", "DB_USER", "--vault", vaultName)
+	err = ExecuteCommand("rm", "--key", "DB_USER", "--vault", vaultName)
 	require.NoError(t, err, "removing secret should succeed")
 
 	// Test Delete Vault
-	err = ExecuteCommand("vaults", "delete", vaultName)
+	err = ExecuteCommand("vault", "rm", vaultName)
 	require.NoError(t, err, "deleting vault should succeed")
 
 	_, err = os.Stat(vaultPath)

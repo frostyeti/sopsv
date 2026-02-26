@@ -25,5 +25,5 @@ func Execute() {
 }
 
 func init() {
-	// Flags will be added here
+	rootCmd.PersistentFlags().StringP("vault", "V", "", "Vault to use (name or path)")
 }

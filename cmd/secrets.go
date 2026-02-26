@@ -72,8 +72,9 @@ var setCmd = &cobra.Command{
 }
 
 var rmCmd = &cobra.Command{
-	Use:   "rm",
-	Short: "Remove a secret from a vault",
+	Use:     "rm",
+	Aliases: []string{"remove", "delete"},
+	Short:   "Remove a secret from a vault",
 	Run: func(cmd *cobra.Command, args []string) {
 		vaultName := getVaultName(cmd)
 
@@ -133,18 +134,19 @@ var ensureCmd = &cobra.Command{
 }
 
 var lsCmd = &cobra.Command{
-	Use:   "ls",
-	Short: "List all secret keys in a vault",
+	Use:     "ls",
+	Aliases: []string{"list"},
+	Short:   "List all secret keys in a vault",
 	Run: func(cmd *cobra.Command, args []string) {
 		vaultName := getVaultName(cmd)
 
-		data, err := vault.ReadVault(vaultName)
+		keys, err := vault.ListKeys(vaultName)
 		if err != nil {
 			color.Red("Error reading vault: %v", err)
 			os.Exit(1)
 		}
 
-		for key := range data {
+		for _, key := range keys {
 			fmt.Println(key)
 		}
 	},
@@ -164,12 +166,16 @@ func getVaultName(cmd *cobra.Command) string {
 
 func init() {
 	rootCmd.AddCommand(secretsCmd)
-	secretsCmd.PersistentFlags().StringP("vault", "V", "", "Vault to use (name or path)")
 
 	secretsCmd.AddCommand(setCmd)
 	secretsCmd.AddCommand(rmCmd)
 	secretsCmd.AddCommand(ensureCmd)
 	secretsCmd.AddCommand(lsCmd)
+
+	// Map core commands to root
+	rootCmd.AddCommand(setCmd)
+	rootCmd.AddCommand(rmCmd)
+	rootCmd.AddCommand(lsCmd)
 
 	setCmd.Flags().StringP("key", "k", "", "Key name")
 	setCmd.Flags().StringP("value", "v", "", "Secret value")

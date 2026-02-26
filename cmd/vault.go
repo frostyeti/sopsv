@@ -9,8 +9,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var vaultsCmd = &cobra.Command{
-	Use:   "vaults",
+var vaultCmd = &cobra.Command{
+	Use:   "vault",
 	Short: "Manage sopsv vaults",
 }
 
@@ -29,9 +29,10 @@ var newVaultCmd = &cobra.Command{
 	},
 }
 
-var listVaultsCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List all managed vaults",
+var lsVaultCmd = &cobra.Command{
+	Use:     "ls",
+	Aliases: []string{"list"},
+	Short:   "List all managed vaults",
 	Run: func(cmd *cobra.Command, args []string) {
 		vaults, err := vault.ListVaults()
 		if err != nil {
@@ -94,10 +95,11 @@ var showVaultCmd = &cobra.Command{
 	},
 }
 
-var deleteVaultCmd = &cobra.Command{
-	Use:   "delete [name]",
-	Short: "Delete a vault",
-	Args:  cobra.ExactArgs(1),
+var rmVaultCmd = &cobra.Command{
+	Use:     "rm [name]",
+	Aliases: []string{"remove", "delete"},
+	Short:   "Delete a vault",
+	Args:    cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		name := args[0]
 		err := vault.DeleteVault(name)
@@ -137,11 +139,11 @@ var editVaultCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(vaultsCmd)
-	vaultsCmd.AddCommand(newVaultCmd)
-	vaultsCmd.AddCommand(listVaultsCmd)
-	vaultsCmd.AddCommand(useVaultCmd)
-	vaultsCmd.AddCommand(showVaultCmd)
-	vaultsCmd.AddCommand(editVaultCmd)
-	vaultsCmd.AddCommand(deleteVaultCmd)
+	rootCmd.AddCommand(vaultCmd)
+	vaultCmd.AddCommand(newVaultCmd)
+	vaultCmd.AddCommand(lsVaultCmd)
+	vaultCmd.AddCommand(useVaultCmd)
+	vaultCmd.AddCommand(showVaultCmd)
+	vaultCmd.AddCommand(editVaultCmd)
+	vaultCmd.AddCommand(rmVaultCmd)
 }

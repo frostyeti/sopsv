@@ -22,7 +22,7 @@ jobs:
           go mod download
           # Install test tools (age and sops) for integration tests
           mkdir -p bin
-          curl -sL https://github.com/getsops/sops/releases/download/v3.8.1/sops-v3.8.1.linux.amd64 -o bin/sops
+          curl -sL https://github.com/getsops/sops/releases/download/v3.9.4/sops-v3.9.4.linux.amd64 -o bin/sops
           chmod +x bin/sops
           curl -sL https://github.com/FiloSottile/age/releases/download/v1.1.1/age-v1.1.1-linux-amd64.tar.gz | tar -xz -C bin --strip-components=1 age/age age/age-keygen
 
@@ -38,6 +38,9 @@ jobs:
         run: |
           export PATH="$PWD/bin:$PATH"
           go test -v -tags=integration ./...
+
+      - name: Run E2E tests
+        run: go test -v -tags=e2e ./tests/e2e/...
 
       - name: Install govulncheck
         run: go install golang.org/x/vuln/cmd/govulncheck@latest

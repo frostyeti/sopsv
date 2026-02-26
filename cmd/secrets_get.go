@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/fatih/color"
 	"github.com/frostyeti/sopsv/internal/vault"
@@ -24,20 +25,24 @@ var getSecretsCmd = &cobra.Command{
 
 		format, _ := cmd.Flags().GetString("format")
 
-		data, err := vault.ReadVault(vaultName)
-		if err != nil {
-			color.Red("Error reading vault: %v", err)
-			os.Exit(1)
-		}
-
 		result := make(map[string]interface{})
 		for _, key := range keys {
-			val, ok := data[key]
-			if !ok {
-				color.Red("Key '%s' not found in vault '%s'", key, vaultName)
+			val, err := vault.GetSecret(vaultName, key)
+			if err != nil {
+				// if extract fails, it's usually because the key isn't there or decryption failed
+				color.Red("Key '%s' not found or error extracting in vault '%s': %v", key, vaultName, err)
 				os.Exit(1)
 			}
-			result[key] = val
+			// Sops extract returns the value as a JSON string or literal string
+			// We will try to unmarshal it as JSON, or keep as string
+			var unmarshaled interface{}
+			if err := json.Unmarshal([]byte(val), &unmarshaled); err == nil {
+				result[key] = unmarshaled
+			} else {
+				// sops extract might just print the unquoted string depending on version,
+				// or maybe we just want to trim spaces if it's not valid json
+				result[key] = strings.TrimSpace(val)
+			}
 		}
 
 		switch format {
@@ -68,6 +73,7 @@ var getSecretsCmd = &cobra.Command{
 
 func init() {
 	secretsCmd.AddCommand(getSecretsCmd)
+	rootCmd.AddCommand(getSecretsCmd)
 
 	getSecretsCmd.Flags().StringSliceP("key", "k", []string{}, "Key name(s)")
 	getSecretsCmd.Flags().StringP("format", "f", "text", "Output format (text, dotenv, sh, json)")

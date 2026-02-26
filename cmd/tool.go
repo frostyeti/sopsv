@@ -11,8 +11,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var toolsCmd = &cobra.Command{
-	Use:   "tools",
+var toolCmd = &cobra.Command{
+	Use:   "tool",
 	Short: "Manage dependencies for sopsv (sops and age)",
 }
 
@@ -70,8 +70,8 @@ var installCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(toolsCmd)
-	toolsCmd.AddCommand(installCmd)
+	rootCmd.AddCommand(toolCmd)
+	toolCmd.AddCommand(installCmd)
 
 	installCmd.Flags().BoolP("global", "g", false, "Install globally")
 	installCmd.Flags().StringP("dest", "d", "", "Custom destination directory")
